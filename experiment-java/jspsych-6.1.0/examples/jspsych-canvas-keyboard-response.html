@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>My experiment</title>
+        <script src="../jspsych.js"></script>
+        <script src="../plugins/jspsych-html-keyboard-response.js"></script>
+        <script src="../plugins/jspsych-canvas-keyboard-response.js"></script>
+        <script src="../plugins/jspsych-image-keyboard-response.js"></script>
+        <link rel="stylesheet" href="../css/jspsych.css"/>
+        <style type="text/css">
+        </style>
+    </head>
+    <body style="background-color:grey;">
+    </body>
+    <script type="text/javascript">
+        function drawImDots(canvasId, xy1, xy2, imageId) {
+            let c = document.getElementById(canvasId);
+            let ctx = c.getContext("2d");
+            let img = document.getElementById(imageId);
+            ctx.drawImage(img, 0, 0);  
+            ctx.beginPath();
+            ctx.arc(xy1[0], xy1[1], 2, 0, 2*Math.PI, true);
+            ctx.arc(xy2[0], xy2[1], 2, 0, 2*Math.PI, true);         
+            ctx.fillStyle = "red";
+            ctx.fill();
+        }
+        function drawDots(canvasId, xy1, xy2, imageId) {
+            let c = document.getElementById(canvasId);
+            let ctx = c.getContext("2d");
+            ctx.beginPath();
+            ctx.arc(xy1[0], xy1[1], 2, 0, 2*Math.PI, true);
+            ctx.arc(xy2[0], xy2[1], 2, 0, 2*Math.PI, true);         
+            ctx.fillStyle = "red";
+            ctx.fill();
+        }
+    </script>
+    <script>
+    /* style="display:none" */
+   
+    /* create timeline */
+    let timeline = [];
+
+    /* define welcome message trial */
+    let welcome = {
+      type: "html-keyboard-response",
+      stimulus: "Welcome to the visual segmentation experiment ! <br/>"
+                 + "Press any key to begin."
+    };
+    timeline.push(welcome);
+
+    /* define instructions trial */
+    let instructions = {
+      type: "html-keyboard-response",
+      stimulus: "<p>An image with 3 areas that differ in their orientations "
+                +"will be presented to you for 3 seconds.</p>"
+                +"Then, a sequence of n short trials "
+                +"will be presented to you.<br/>"
+                +"In each trial two locations  in the image "
+                +"will be cued (red dots).<br/>"
+                +"You should tell whether the two cued locations belong "
+                +"to the same area by pressing the left or right key."
+                +"<p>Press any key when you are ready.</p>",
+      post_trial_gap: 1000
+    };
+    timeline.push(instructions);
+
+    let init_trial = {
+      type: "image-keyboard-response",
+      stimulus: 'img/artifSeg-th5-thS5.0-4.png',
+      choices: jsPsych.NO_KEYS,
+      trial_duration: 3000, 
+      post_trial_gap: 1000  
+    };
+    timeline.push(init_trial);
+    
+    /* test trials */
+
+    let trial = {
+      type: "canvas-keyboard-response",
+      xy1: jsPsych.timelineVariable('xy1'),
+      xy2: jsPsych.timelineVariable('xy2'),
+      canvasWidth: 256,
+      canvasHeight: 256,
+      timeline: [{stimulus: drawDots, image: '', trial_duration: 150,
+                  stimulus_duration: 150, post_trial_gap: 0,
+                  choices: jsPsych.NO_KEYS}, 
+                 {stimulus: drawImDots, image: 'img/artifSeg-th5-thS5.0-4.png',
+                  trial_duration: 250, stimulus_duration: 250, post_trial_gap: 0}, 
+                 {type: "html-keyboard-response", 
+                  stimulus: "&ensp;Same"
+                            +"<span style='display:inline-block;"
+                            +"width: 80px;'></span>"+"Different<br/>"
+                            +"Left"
+                            +"<span style='display:inline-block;"
+                            +"width: 100px;'></span>"+"Right<br/>",
+                  choices: ['leftarrow','rightarrow'], post_trial_gap: 250}
+                ]
+    };
+    
+    let trials = {
+      timeline: [trial],
+      repetitions: 1,
+      randomize_order: true,
+      timeline_variables: [ {xy1: [20,30], xy2: [100,45]},
+                            {xy1: [140,80], xy2: [190,155]},
+                            {xy1: [20,230], xy2: [175,75]},
+                            {xy1: [200,130], xy2: [175,145]},
+                            {xy1: [100,125], xy2: [230,150]} 
+                          ]
+    };
+
+    timeline.push(trials);
+
+    /* define debrief */
+
+    let debrief_block = {
+      type: "html-keyboard-response",
+      stimulus: function() {
+        return "<p>You did it beautifully !</p>"+
+               "<p>Press any key to end.</p>";
+      }
+    };
+    timeline.push(debrief_block);
+
+    /* start the experiment */
+    jsPsych.init({
+      timeline: timeline,
+      preload_images: ['img/artifSeg-th5-thS5.0-4.png'],
+      on_finish: function() {
+        jsPsych.data.displayData();
+      }
+    });
+  </script>
+</html>

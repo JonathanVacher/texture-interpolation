@@ -1,0 +1,634 @@
+<meta charset="utf-8"/>
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Texture similarity experiment</title>
+        <script src="../jspsych-6.1.0/jspsych.js"></script>
+        <script src="../jspsych-6.1.0/plugins/jspsych-html-keyboard-response.js"></script>
+        <script src="../jspsych-6.1.0/plugins/jspsych-image-keyboard-response.js"></script>
+        <script src="../jspsych-6.1.0/plugins/jspsych-canvas-keyboard-response.js"></script>        
+        <script src="../jspsych-6.1.0/plugins/jspsych-survey-multi-choice.js"></script>        
+        <script src="../jspsych-6.1.0/plugins/jspsych-fullscreen.js"></script>   
+        <script src="../jspsych-6.1.0/plugins/jspsych-resize.js"></script>                
+        <script src="../jspsych-6.1.0/my_plugins/jspsych-triple-images.js"></script>
+        <script src="../jspsych-6.1.0/my_plugins/jspsych-survey-text.js"></script>
+        <script src="../jspsych-6.1.0/my_plugins/jspsych-canvas-slider-response-callback.js"></script>  
+                                
+        <script src="extra-js/params.js"></script>
+        <link rel="stylesheet" href="../jspsych-6.1.0/css/jspsych.css"/>
+        <style type="text/css">
+            .column {
+                float: left;
+                width: 256px;
+                padding: 5px;
+            }
+            .row::after {
+                content: "";
+                clear: both;
+                display: table;
+                padding-bottom: 20px;
+            }
+            .slider {
+		  -webkit-appearance: none;
+		  width: 100%;
+		  height: 25px;
+		  background: #d3d3d3;
+		  outline: none;
+		  opacity: 0.7;
+		  -webkit-transition: .2s;
+		  transition: opacity .2s;
+	    }
+	    .slider::-webkit-slider-thumb {
+		  -webkit-appearance: none;
+		  appearance: none;
+		  width: 25px;
+		  height: 25px;
+		  background: #4CAF50;
+		  cursor: pointer;
+		  border: 0px solid #000000;
+	    }
+	    .slider::-moz-range-thumb {
+		  width: 25px;
+		  height: 25px;
+		  background: #4CAF50;
+		  cursor: pointer;
+		  border: 0px solid #000000;
+	    }
+
+        </style>
+    </head>
+    <body style="background-color:rgb(127,127,127);">
+    </body>
+    <script>
+    
+
+    /* welcome message trial */
+    let welcome = {
+        type: "html-keyboard-response",
+        stimulus: "Welcome to the texture similarity experiment! <br/>"
+                 + "Press any key to begin."
+    };
+
+    /* ask for participant id trial */
+    let ask_id = {
+        type: 'survey-text',
+        questions: [
+                        {prompt: 'Please, enter your prolific ID:', 
+                         columns: 20, required: true, name: 'id'}
+                   ],
+        on_finish: function(data){
+                       id = data.raw_responses.id;
+                   }
+      };
+
+
+    /* instruction trial */
+    let instructions1 = {
+        type: "html-keyboard-response",
+        stimulus: 'This experiment is expected to last between 45 and 60 minutes.<br/>'
+        	  + 'The duration could be longer if you take longer break which is '
+        	  + 'totally fine.<br/><br/>'
+        	  + 'First, the next screen will switch your browser to full screen mode.<br/><br/>'
+        	  + 'Then, the next 4 screens will ask you to complete short tasks<br/>'
+        	  + 'that will allow us to calibrate the gray levels and the sizes '
+        	  + 'of our stimuli.<br/><br/>'
+        	  + 'Press any key to continue.'
+    };
+
+
+    /* fullscreen mode */
+    let fullscreen_on = {
+        type: 'fullscreen',
+        fullscreen_mode: true,
+        message: '<p>When you press the button below, the experiment ' 
+        	+ 'will switch to full screen mode.</p>'
+    };
+
+    
+    /* gamma correction 
+    let gamma_cor = {
+        type: 'canvas-slider-response-callback',
+        stimulus: measureGamma,
+        labels: [0.8, '1.0', 1.2, 1.4, 1.6 , 1.8, '2.0', 2.2, 2.4, 2.6, 2.8],
+        canvasWidth: 1024,
+        canvasHeight: 392,        
+        slider_width: 1024,          
+        min: 0.8,
+        max: 2.8,
+        step: 0.025,
+        start: 1.0,
+        require_movement: false,
+        prompt: '<p>Squint your eyes such that the surrounding of each '
+                + 'disk appears approximately uniformly gray. </br>'
+                + 'Then, move the slider at the position where '
+                + 'the gray level of the disk approximately '
+                + ' matches the gray level of their surroundings.</p>',
+        on_finish: function(trialdata){
+                        gamma_val = parseFloat(trialdata.response);
+                        grey = parseInt(255 * Math.pow(0.5,1/gamma_val)).toString();
+                        document.body.style.backgroundColor = 'rgb('+grey+','+grey+','+grey+')';
+                    }
+    };
+    */
+    
+    /* screen type */
+    let screen_type = {
+    	type: 'survey-multi-choice',
+    	questions: [{prompt: 'What monitor are using to do this experiment?',
+    		     options: screen_type_options,
+    		     required: true},
+    		    {prompt: 'Are you using the maximum possible resolution?',
+    		     options: ['Yes','No',"I don't know"],
+    		     required: true}],
+    	data: {save_type: 'response_calibration'},
+    	on_finish: function(data){
+		      	delete data.stimulus
+			delete data.trial_type
+			delete data.trial_index
+    		   }
+    };
+
+        
+    /* gamma correction */
+    let gamma_cor1 = {
+        type: 'canvas-slider-response-callback',
+        stimulus: measureGamma1,
+        labels: [0.8, '1.0', 1.2, 1.4, 1.6 , 1.8, '2.0', 2.2, 2.4, 2.6, 2.8],
+        canvasWidth: 1024,
+        canvasHeight: 392,        
+        min: 0.8,
+        max: 2.8,
+        step: 0.025,
+        start: 1.0,
+        require_movement: true,
+        prompt: '<p>Move the slider once with your mouse. You can now '
+        	+'move the slider with the left and right keyboard keys.</p>'
+        	+'<p>Now, squint your eyes such that the grid surrounding of the '
+                + 'disk appears approximately uniformly gray. </br>'
+                + 'Then, move the slider at the position where '
+                + 'the gray level of the disk approximately '
+                + 'matches the gray level of the gridded surroundings.</p>',
+        data: {save_type: 'response_calibration'},
+        on_finish: function(data){
+                       data.gamma_val1 = parseFloat(data.response);
+		      	delete data.stimulus
+			delete data.trial_type
+			delete data.trial_index
+                   }
+    };
+ 
+
+    /* gamma correction */
+    let gamma_cor2 = {
+        type: 'canvas-slider-response-callback',
+        stimulus: measureGamma2,
+        labels: [0.8, '1.0', 1.2, 1.4, 1.6 , 1.8, '2.0', 2.2, 2.4, 2.6, 2.8],
+        canvasWidth: 1024,
+        canvasHeight: 392,        
+        min: 0.8,
+        max: 2.8,
+        step: 0.025,
+        start: 1.0,
+        require_movement: true,
+        prompt: '<p>Move the slider once with your mouse. You can now '
+        	+'move the slider with the left and right keyboard keys.</p>'
+        	+'<p>Now, squint your eyes such that the grid surrounding of the '
+                + 'disk appears approximately uniformly gray. </br>'
+                + 'Then, move the slider at the position where '
+                + 'the gray level of the disk approximately '
+                + 'matches the gray level of the gridded surroundings.</p>',
+        data: {save_type: 'response_calibration'},
+        on_finish: function(data){
+                        data.gamma_val2 = parseFloat(data.response);
+                       delete data.stimulus
+			delete data.trial_type
+			delete data.trial_index
+                   }
+    };
+
+
+    /* gamma correction */
+    let gamma_cor3 = {
+        type: 'canvas-slider-response-callback',
+        stimulus: measureGamma3,
+        labels: [0.8, '1.0', 1.2, 1.4, 1.6 , 1.8, '2.0', 2.2, 2.4, 2.6, 2.8],
+        canvasWidth: 1024,
+        canvasHeight: 392,        
+        min: 0.8,
+        max: 2.8,
+        step: 0.025,
+        start: 1.0,
+        require_movement: true,
+        prompt: '<p>Move the slider once with your mouse. You can now '
+        	+'move the slider with the left and right keyboard keys.</p>'
+        	+'<p>Now, squint your eyes such that the grid surrounding of the '
+                + 'disk appears approximately uniformly gray. </br>'
+                + 'Then, move the slider at the position where '
+                + 'the gray level of the disk approximately '
+                + 'matches the gray level of the gridded surroundings.</p>',
+        data: {save_type: 'response_calibration'},
+        on_finish: function(data){
+                       data.gamma_val3 = parseFloat(data.response); 
+                       delete data.stimulus
+			delete data.trial_type
+			delete data.trial_index
+                   }
+    };
+ 
+
+    /* controlling size */
+    let zoom_cor = {
+      type: 'resize',
+      item_width: 8.56,
+      item_height: 5.398,
+      prompt: '<p>Click and drag the lower right corner of the box '
+      	     +'until the box is the same size as a credit card held '
+      	     +'up to the screen.</p>',
+      pixels_per_unit: 40,
+      starting_size: 325,
+      data: {save_type: 'response_calibration'},
+      on_finish: function(data){
+		      	delete data.stimulus
+			delete data.trial_type
+			delete data.trial_index
+      		  }
+    };
+
+
+   /* calibrate trial */
+    let apply_calib = {
+        type: "html-keyboard-response",
+        stimulus: 'Press any key to complete the calibration.',
+        on_finish: function(){
+                        grey = parseInt(255 * Math.pow(0.5,1/gamma_val)).toString();
+                        document.body.style.backgroundColor = 'rgb('+grey+','+grey+','+grey+')';
+                   }
+    };
+
+    /* intro practice trial */
+    let trial_intro_practice = {
+        type: "html-keyboard-response",
+        stimulus: '<p>THE EXPERIMENT</p>'
+        	 +'<p>A trial consists in the presentation '
+        	 +'of three stimuli (top, bottom left '
+        	 +'and bottom right).</p>'
+        	 +'<p>Try to keep your eyes an outstretched arm '
+        	 +'away from the screen along the experiment.</p>'        	 
+        	 +'<p>For each trial, you have to tell whether '
+        	 +'the bottom left or the bottom right image is '
+                +'more similar to the top image.</p>'
+                +'<p>To answer, wait for the end of the stimulus '
+                +'screen and press the left or right arrow of '
+                +'your keyboard.</p>'
+                +'<p>You will practice the experiment in the next '
+                +'10 trials.</p><p>A Feedback is given for the 3 '
+                +'first trials. If you answer wrongly to at least '
+                +'one of these trials, the practice will restart.</p>'
+                +'<p>If at any point, one or multiple stimuli do '
+                +'not appear on the screen, wait a few seconds and '
+                +'continue as if nothing happened.</p>'
+        	+'<p>Press any key to practice.</p>',
+    };
+    //timeline.push(intro_practice);
+    
+    /* condition for intro practice trial */
+    let intro_practice = {
+        timeline: [trial_intro_practice],
+        conditional_function: intro_practice_cond
+    };
+
+
+    /* practice trial */
+    let trial_fix_ = {
+        type: "html-keyboard-response", 
+        stimulus: "+",
+        trial_duration: 250, 
+        stimulus_duration: 250,
+        post_trial_gap: 0, 
+        choices: jsPsych.NO_KEYS
+    };
+
+   /* stimulus trial */
+    let trial_stim_ = {
+        type: "triple-images",
+        disp_func: disp_train,
+        stimulus: function(){
+                      return images_gauss[im_idx];
+                            },
+        radius: 90,
+        triplet: function() { 
+                     var id_and_triplet = 
+                            jsPsych.timelineVariable('id_and_triplet', true); 
+                     return id_and_triplet.triplet;
+                            },
+        trialId: function() { 
+                     var id_and_triplet = 
+                            jsPsych.timelineVariable('id_and_triplet', true); 
+                     return id_and_triplet.trialId;
+                            },
+        randomize: false,
+        canvasWidth: 450,
+        canvasHeight: 450,
+        trial_duration: 1250, 
+        stimulus_duration: 1250,
+        post_trial_gap: 0, 
+        choices: jsPsych.NO_KEYS
+    };
+    
+    /* response trial */
+    let trial_resp_ = {
+        type: "html-keyboard-response", 
+        stimulus: "Press left key"
+                +"<span style='display:inline-block;"
+                +"width: 100px;'></span>"+"Press right key<br/>",
+        choices: ['leftarrow','rightarrow'],
+        post_trial_gap: 150,
+        data: {save_type: 'response_train'},
+        on_finish: save_data
+    };
+    
+    /* Single MLDS trial */
+    let trial_ = {
+        timeline: [trial_fix_, trial_stim_, trial_resp_],
+        repetitions: 1,
+        randomize_order: false,
+        timeline_variables: [jsPsych.timelineVariable('id_and_triplet')]
+    };
+    
+    /* feedback trial */
+    let trial_feedback = {
+        type: "html-keyboard-response", 
+        stimulus: feedback_stim,
+        choices: jsPsych.NO_KEYS, 
+        trial_duration: 1000, 
+        post_trial_gap: 250,
+        on_finish: function(){
+	      		feedback_count = feedback_count+1;
+	      	    }
+    };
+    
+    /* condition feedback trial */
+    let feedback = {
+        timeline: [trial_feedback],
+        conditional_function: feedback_cond
+    };
+
+
+    /* all trials */
+    let trials_ = {
+      chunk_type: 'while',
+      timeline: [intro_practice,trial_,feedback],
+      repetitions: 1, 
+      randomize_order: false,
+      timeline_variables: triplets_train,
+      loop_function: practice_loop
+    };
+
+
+    /* final instruction */
+    let final_instruction = {
+        type: 'html-keyboard-response',
+        stimulus: '<p>The experiment has 3 sessions (~15 min each) '
+        	+'with different images. You can take a break of up to 5 min '
+        	+'between sessions.</p>'
+        	+ '<p>Each session is composed of 8 runs (1-2 min). '
+        	+'You can take a short break between runs (<1 min)</p>'
+                +'<p>Press any key to continue.</p>'
+    };
+     
+    
+    /* define instructions trial */
+    let instructions = {
+        type: "html-keyboard-response",
+        stimulus: '<p>For each trial, report if the left or right image is '
+                +'more similar to the top image.</p>'
+                +'<p>Try to keep your eyes an outstretched arm '
+        	 +'away from the screen along the experiment.</p>'        	 
+                +'<p>Press any key to start the experiment.</p>',
+        post_trial_gap: 1000
+    };
+
+
+    /* fixation trial */
+    let trial_fix = {
+        type: "html-keyboard-response", 
+        stimulus: "+",
+        trial_duration: 250, 
+        stimulus_duration: 250,
+        post_trial_gap: 0, 
+        choices: jsPsych.NO_KEYS
+    };
+
+    /* stimulus trial */
+    let trial_stim = {
+        type: "triple-images",
+        disp_func: disp,
+        stimulus: function(){
+                      return images_gauss[im_idx];
+                            },
+        radius: 90,
+        triplet: function() { 
+                     var id_and_triplet = 
+                            jsPsych.timelineVariable('id_and_triplet', true); 
+                     return id_and_triplet.triplet;
+                            },
+        trialId: function() { 
+                     var id_and_triplet = 
+                            jsPsych.timelineVariable('id_and_triplet', true); 
+                     return id_and_triplet.trialId;
+                            },
+        canvasWidth: 450,
+        canvasHeight: 450,
+        trial_duration: 1250, 
+        stimulus_duration: 1250,
+        post_trial_gap: 0, 
+        choices: jsPsych.NO_KEYS
+    };
+    
+    /* response trial */
+    let trial_resp = {
+        type: "html-keyboard-response", 
+        stimulus: "Left"
+                +"<span style='display:inline-block;"
+                +"width: 100px;'></span>"+"Right<br/>",
+        choices: ['leftarrow','rightarrow'],
+        post_trial_gap: 150,
+        data: {save_type: 'response'},
+        on_finish: save_data
+    };
+    
+    /* Single MLDS trial */
+    let trial = {
+        timeline: [trial_fix, trial_stim, trial_resp],
+        repetitions: 1,
+        randomize_order: false,
+        timeline_variables: [jsPsych.timelineVariable('id_and_triplet')]
+        //on_finish: function(data){console.log(jsPsych.data.get().filter({save_type: 'response'}).csv())}
+    };
+
+    /* pause trial */
+    let trial_pause = {
+        type: "html-keyboard-response", 
+        stimulus: pause_stim,
+        choices: ['enter'], 
+        post_trial_gap: 250
+    };
+    
+    /* condition pause trial */
+    let pause = {
+        timeline: [trial_pause],
+        conditional_function: pause_cond
+    };
+
+    /* all trials */
+    let trials = {
+      timeline: [trial, pause],
+      repetitions: 4, // =4 for real experiment
+      randomize_order: true,
+      timeline_variables: triplets
+    };
+
+    /* define comments */
+    let comment_block = {
+        type: 'survey-text',
+        questions: [
+                      {prompt: '<p>End of session.</p>'
+                    		+'<p>If you have any comments (missing stimulus, '
+                    		+'practical difficulties, ...), write them below.</p>'
+                    		+'<p>If you do not have comments, just write "No comments"</p>', 
+                       rows: 10, columns: 80, required: true, name: 'comments'}
+                   ],
+        on_start: function(){document.body.style.cursor='default'},
+        on_finish: function(data){
+                       comments = data.raw_responses.comments;
+                       console.log(comments);
+                   }
+      };
+
+    /* define debrief */
+    let debrief_block = {
+        type: "html-keyboard-response",
+        stimulus: function() {
+                    return '<p>Press any key to send your results automatically.</p>'
+                    	   +'<p>Then, the experiment will continue.</p>';
+                  },
+        on_finish: function() {alert("Public version. Not sending anything!");}
+    };
+
+    /* first stimulus trial */
+    let first_pair = {
+        type: 'html-keyboard-response',
+        stimulus: '<p>FIRST SESSION</p>'
+                + '<p>Press any key to continue.</p>',
+        on_finish: function(data){
+        		document.body.style.cursor='none';
+                       im_idx = rdm_block_idx[0];
+                   }
+    };
+
+    /* second stimulus trial */
+    let second_pair = {
+        type: 'html-keyboard-response',
+        stimulus: "<p>SECOND SESSION</p>"
+                +"<p>Press any key to continue.</p>",
+        on_finish: function(data){
+        		document.body.style.cursor='none';
+                       im_idx = rdm_block_idx[1];
+                   }
+    };
+
+    /* third stimulus trial */
+    let third_pair = {
+        type: 'html-keyboard-response',
+        stimulus: "<p>LAST SESSION</p>"
+                + "<p>Press any key to continue.</p>",
+        on_finish: function(data){
+        		document.body.style.cursor='none';
+                       im_idx = rdm_block_idx[2];
+                   }
+    };
+
+    /* ending message */
+    let end = {
+        type: "html-keyboard-response",
+        stimulus: "<p>You have completed the experiment!</p>"
+                +"<p>Thank you for your participation!</p>"
+                +"<p>Visit this <a href='' target='_blank'>"
+                +"page</a> to validate " 
+                +"your participation with prolific.</p>"
+                +"<p>Visit this "
+                +"<a href='https://jonathanvacher.github.io/"
+                +"psych-experiments/mlds-textures/explanation.html' "
+                +"target='_blank'>page</a> to know " 
+                +"more about how we use these collected data.</p>"
+                ,
+        post_trial_gap: 1000
+    };
+    
+    
+    /* fullscreen mode off */
+    let fullscreen_off = {
+        type: 'fullscreen',
+        fullscreen_mode: false
+    };
+    
+    
+    /* create timeline */
+    let timeline = [];
+    
+    /* welcome + id + instructions */
+    timeline.push(welcome);
+    timeline.push(ask_id);
+    timeline.push(instructions1);
+    timeline.push(fullscreen_on);
+    
+    /* questions + gamma and size calibrations */
+    timeline.push(screen_type);
+    timeline.push(gamma_cor1);
+    timeline.push(gamma_cor2);
+    timeline.push(gamma_cor3);
+    timeline.push(zoom_cor);
+    timeline.push(apply_calib);
+    
+    /* practice */
+    timeline.push(trials_);
+    timeline.push(final_instruction);
+    
+    /* first pair */
+    timeline.push(first_pair);
+    timeline.push(instructions);         
+    timeline.push(trials);
+    timeline.push(comment_block);  
+    timeline.push(debrief_block);
+    timeline.push(fullscreen_on);
+    
+    /* second pair */
+    timeline.push(second_pair);
+    timeline.push(instructions);
+    timeline.push(trials);  
+    timeline.push(comment_block);  
+    timeline.push(debrief_block);
+    timeline.push(fullscreen_on);
+    
+    /* last pair */
+    timeline.push(third_pair);
+    timeline.push(instructions);
+    timeline.push(trials);    
+    timeline.push(comment_block);
+    timeline.push(debrief_block);
+    
+    /* ending experiment */
+    timeline.push(fullscreen_off);
+    timeline.push(end);
+    
+    /* start the experiment */
+    jsPsych.init({
+      timeline: timeline,
+      preload_images: [images_gauss,
+                       'img/stripes-patches-1.png',
+                       'img/stripes-patches-2.png',
+                       'img/stripes-patches-3.png']
+    });
+
+  </script>
+</html>

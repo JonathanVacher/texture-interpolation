@@ -1,6 +1,6 @@
-Code associated to the NeurIPS paper: Texture Interpolation for Probing Visual Percpetion 
+Code associated to the NeurIPS paper: Texture Interpolation for Probing Visual Perception  
 
-Bibtex:
+Bibtex:  
 ```
 @article{vacher2020texture,
   title={Texture Interpolation for Probing Visual Perception},
@@ -13,6 +13,6 @@ Bibtex:
 ```
 
 Usage:
-1/ run pip(3) install requirements.txt
-2/ run python(3) run_synthesis.py
-3/ check if you've generated the exact same output as output_tex_ref.png 
+1. run pip(3) install requirements.txt
+2. run python(3) run_synthesis.py
+3. check if you've generated the exact same output as output_tex_ref.png 

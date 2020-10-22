@@ -2,8 +2,8 @@
 
 Example:
     Synthesize a texture that interpolate two input textures :
-        python3 run_synthesis.py --input_tex_1 input_tex_1.png
-                                 --input_tex_2 input_tex_2.png
+        python3 run_synthesis.py --input_tex_1 curvy.jpg
+                                 --input_tex_2 woven.jpg
                                  --weight_1 0.5
     
 See options/base_options.py and options/train_options.py for more training options.

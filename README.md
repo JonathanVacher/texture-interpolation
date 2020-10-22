@@ -1,5 +1,9 @@
 Code associated to the NeurIPS paper: Texture Interpolation for Probing Visual Perception  
 
+<p align="center">
+  <img src="thumbnail-sized.png"/>
+</p>
+
 Bibtex:  
 ```
 @article{vacher2020texture,
@@ -26,4 +30,5 @@ The code to run inlab experiments. (to come...)
 
 # data-analysis
 The code to run the psychometric analysis.
+
 

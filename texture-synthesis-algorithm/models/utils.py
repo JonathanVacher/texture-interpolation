@@ -1,15 +1,17 @@
 import torch
+import torch.fft
 from torch import nn
 from torch.autograd import Function
 import torchvision.transforms as transforms
 import torchvision.models as models
-import geomloss
 import numpy as np
 from PIL import Image
 import os
+import socket
 
 
 """ Utilitary functions
+- socket_is_used
 - init_weights_unif
 - init_weights_gauss
 - init_weights_unif_smoothed
@@ -42,6 +44,17 @@ import os
 - power_spectrum
 - power_spectrum_constraint
 """
+
+def socket_is_used(port, hostname):
+    is_used = False
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        s.bind((hostname, port))
+    except socket.error:
+        is_used = True
+    finally:
+        s.close()
+    return is_used
 
 def init_weights_unif(layer):
     """ Initializing rdm weights with uniform distribution
@@ -455,9 +468,9 @@ class MatrixSquareRoot(Function):
             Y = Y.mm(T)
             Z = T.mm(Z)
         sqrtm = Y*torch.sqrt(norm)
-        ctx.mark_dirty(Y,I,Z)
+        #ctx.mark_dirty(Y,I,Z)
         ctx.save_for_backward(sqrtm)
-        return sqrtm
+        return sqrtm#, I, Y, Z
 
     @staticmethod
     def backward(ctx, grad_output):
@@ -643,20 +656,18 @@ class TexLossOptTransAlternative(torch.nn.Module):
     
 # Helper for batch 2d fft of real number
 def fft2(input):
-    output = input.unsqueeze(-1)
-    output = torch.cat((output,torch.zeros_like(output)),-1)
-    output = torch.fft(output, 2, normalized=True)
+    output = torch.fft.fft(input, 2, norm='ortho')
     return output
 
 # Helper for batch 2d inverse fft with symmetries
 # (corresponding to a real signal in spatial domain)
 def ifft2(input):
-    output = torch.ifft(output, 2, normalize=True)
-    return output[...,0]
+    output = torch.fft.ifft(input, 2, norm='ortho')
+    return output.real
 
 # helper for power spectrum computation
 def power_spectrum(input):
-    output = torch.norm(fft2(input), dim=-1)
+    output = torch.abs(fft2(input))
     return output
 
 # helper for power spectrum constraint

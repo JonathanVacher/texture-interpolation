@@ -21,10 +21,10 @@ class TexGramModel(BaseModel):
         self.input_tex_2 =   utils.image_loader(opt.input_tex_2, opt.gray,
                                                 self.device)
         shape = np.fromstring(opt.shape, dtype=int, sep=',')
+        self.weight_1 = opt.weight_1
         self.output_tex = 0.5+0.02*torch.randn((1,1,shape[0],shape[1]),
                                           device=self.device).repeat(1,3,1,1)
         self.output_tex.requires_grad=True
-        self.weight_1 = opt.weight_1
         self.lap_reg = opt.lap_reg
         scales = np.fromstring(opt.scales, dtype=int, sep=',')
         self.cnn, self.tex_layers = utils.network_loader(
